@@ -30,21 +30,71 @@ namespace ThreeHandPoker
 
         public void GetWinner(List<PlayerHand> players)
         {
-            var sortedPlayers = players.OrderByDescending(x => x.HandValue).Select(x => x).ToList();
+            var maxCardValue = 0;
+            var sortedPlayers = players.OrderByDescending(x => x.HandValue)
+                .Select(x => x).ToList();
+
             var topValue = sortedPlayers.Select(x => x.HandValue).FirstOrDefault();
+
+            var finaltableplayers = players.Where(x => x.HandValue == topValue).Select(x => x).ToList();
+
+
+            if (finaltableplayers.Count > 1)
+            {
+                for (int i = 0; i < (finaltableplayers.Count - 1); i++)
+                {
+                    maxCardValue = Math.Max(finaltableplayers[i].Cards[0].CardValue, finaltableplayers[i + 1].Cards[0].CardValue);
+                }
+                finaltableplayers = CompareHighCard(finaltableplayers, maxCardValue);
+            }
+
+            if (finaltableplayers.Count > 1)
+            {
+                for (int i = 0; i < (finaltableplayers.Count - 1); i++)
+                {
+                    maxCardValue = Math.Max(finaltableplayers[i].Cards[1].CardValue, finaltableplayers[i + 1].Cards[1].CardValue);
+                }
+                finaltableplayers = CompareHighCard(finaltableplayers, maxCardValue);
+            }
+          
+            if (finaltableplayers.Count > 1)
+            {
+                for (int i = 0; i < (finaltableplayers.Count - 1); i++)
+                {
+                    maxCardValue = Math.Max(finaltableplayers[i].Cards[2].CardValue, finaltableplayers[i + 1].Cards[2].CardValue);
+                }
+                finaltableplayers = CompareHighCard(finaltableplayers, maxCardValue);
+            }
+
             foreach (var player in players)
             {
-                if (player.HandValue == topValue)
+                if (finaltableplayers.Contains(player))
                 {
                     player.Winner = true;
                 }
             }
         }
 
-        public List<Card> BuildPlayerCards(string[] values)
+        private List<PlayerHand> CompareHighCard(List<PlayerHand> finaltableplayers, int comparevalue)
+        {
+            List<PlayerHand> returnPlayers = new List<PlayerHand>();
+            foreach (var player in finaltableplayers)
             {
-             List<string> validRanks = new List<string> { "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A" };
-             List<string> validSuites = new List<string> { "H", "S", "C", "D" };
+                foreach (var card in player.Cards)
+                {
+                    if (card.CardValue == comparevalue)
+                    {
+                        returnPlayers.Add(player);
+                    }
+                }
+            }
+            return returnPlayers;
+        }
+
+        public List<Card> BuildPlayerCards(string[] values)
+        {
+            List<string> validRanks = new List<string> { "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A" };
+            List<string> validSuites = new List<string> { "H", "S", "C", "D" };
 
             List<Card> cards = new List<Card>();
             for (int j = 1; j < values.Length; j++)
@@ -75,7 +125,7 @@ namespace ThreeHandPoker
                     }
                 }
             }
-            return cards;
+            return cards.OrderByDescending(x => x.CardValue).ToList();
         }
 
         private int GetCardValue(string Rank)
